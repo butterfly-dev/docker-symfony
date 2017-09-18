@@ -1,0 +1,27 @@
+# This file is auto-generated during the composer install
+parameters:
+    # Database
+    database_host: '%env(MARIADB_HOST)%'
+    database_port: '%env(MARIADB_PORT)%'
+    database_name: '%env(MARIADB_DATABASE)%'
+    database_user: '%env(MARIADB_USER)%'
+    database_password: '%env(MARIADB_PASSWORD)%'
+
+    # Mongo
+    mongodb_host: '%env(MONGODB_HOST)%'
+    mongodb_port: '%env(MONGODB_PORT)%'
+    mongodb_database: '%env(MONGODB_DATABASE)%'
+    mongodb_user: '%env(MONGODB_USER)%'
+    mongodb_password: '%env(MONGODB_PASSWORD)%'
+
+    # Redis
+    redis_host: 'redis://%env(REDIS_HOST)%'
+
+    # Mailer
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_user: '%env(MAILER_USER)%'
+    mailer_password: null
+
+    # Symfony
+    secret: '%env(SECRET)%'

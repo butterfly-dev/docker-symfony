@@ -1,0 +1,13 @@
+### PHPStorm
+.idea/
+### Symfony
+/var/cache/*
+/var/logs/*
+/var/sessions/*
+!var/cache/.gitkeep
+!var/logs/.gitkeep
+!var/sessions/.gitkeep
+/var/bootstrap.php.cache
+/vendor/
+/web/bundles/
+/web/uploads/
