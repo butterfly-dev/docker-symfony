@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  nginx:
+      image: nginx
+      networks:
+        - app
+      ports:
+        - ${NGINX_PORT}:80
+        - ${NGINX_PORT_HTTPS}:443
+      volumes:
+        - .:/var/www/symfony
+      links:
+        - php
+
+  php:
+    image: php:7.1-fpm
+    env_file:
+      - ../.env
+    networks:
+      - app
+    volumes:
+      - .:/var/www/symfony
+    links:
+      - mariadb
+      - mongodb
+
+  mariadb:
+    image: mariadb:10.3
+    networks:
+      - app
+    ports:
+      - ${MARIADB_EXPOSE_PORT}:${MARIADB_PORT}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_DATABASE}
+      MYSQL_USER: ${MARIADB_USER}
+      MYSQL_PASSWORD: ${MARIADB_PASSWORD}
+
+  mongodb:
+    image: mongo:3
+    networks:
+      - app
+    ports:
+      - ${MONGODB_PORT}:27017
+    volumes:
+      - ./mongodb:/home
+
+  redis:
+    image: redis:4
+    networks:
+      - app
+    ports:
+      - ${REDIS_PORT}:6379
+
+networks:
+  app:
+      driver: bridge
