@@ -1,0 +1,51 @@
+version: 2
+
+jobs:
+  test:
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Docker Compose
+          command: |
+            set -x
+            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+      - run:
+          name: Run test
+          command: |
+            make run
+            make test
+      - run:
+          name: Run audit code
+          command: |
+            make cs
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+#      - build
+      - test
+
+
+#      - run:
+#          name: Install dependencies
+#          command: |
+#            apk add --no-cache \
+#              py-pip=9.0.0-r1
+#            pip install \
+#              docker-compose==1.12.0
+#      - run:
+#          name: Build app for dev
+#          command: |
+#            cd docker/php
+#            docker build --rm=false -t butterflydev/base-app-dev:$CIRCLE_SHA1 .
+#            docker push butterflydev/base-app-dev:$CIRCLE_SHA1
+#      - run:
+#          name: Run test
+#          command: |
+#              docker run butterflydev/base-app-dev:$CIRCLE_SHA1
+#              docker stop butterflydev/base-app-dev:$CIRCLE_SHA1
