@@ -32,7 +32,7 @@ RUN curl -sS -o /tmp/icu.tar.gz -L http://download.icu-project.org/files/icu4c/5
 ####
 # INSTALL PHP EXTENSION
 ###
-RUN docker-php-ext-install pdo pdo_mysql opcache intl bcmath curl xml mbstring
+RUN docker-php-ext-install pdo pdo_mysql opcache intl bcmath curl xml mbstring zip
 
 ###
 # INSTALL AND ENABLE APCU

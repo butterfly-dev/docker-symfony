@@ -68,6 +68,25 @@ console ()
     ${DOCKER_COMPOSE} exec -T --user www-data php bin/console ${ARGS}
 }
 
+tests ()
+{
+    ${DOCKER_COMPOSE} exec -T --user www-data php ./vendor/bin/simple-phpunit --coverage-text --colors=never
+}
+
+cs ()
+{
+    echo "Lint..."
+    ${DOCKER_COMPOSE} exec -T --user www-data php find src -name '*.php' -exec php -l {} \; || EXIT_STATUS=$?
+    echo "PHP CS..."
+    ${DOCKER_COMPOSE} exec -T --user www-data php ./vendor/bin/phpcs --standard=phpcs.xml --extensions=php --ignore='var/,vendor/,app/AppKernel.php' src || EXIT_STATUS=$?
+    echo "PHP MD..."
+    ${DOCKER_COMPOSE} exec -T --user www-data php ./vendor/bin/phpmd src/ text phpmd.xml --exclude 'tests/,var/,vendor/' --suffixes php || EXIT_STATUS=$?
+    echo "PHP CPD..."
+    ${DOCKER_COMPOSE} exec -T --user www-data php ./vendor/bin/phpcpd src/ || EXIT_STATUS=$?
+
+    exit $EXIT_STATUS
+}
+
 usage ()
 {
     echo "usage: bin/docker [ENV] COMMAND [ARGUMENTS]
@@ -84,6 +103,8 @@ usage ()
     exec-root           Execute command has root inside container app
     composer            Execute composer inside container app
     console             Execute bin/console symfony inside container app
+    tests               Run test inside app container
+    cs                  Run code style inside app container
     "
 }
 
@@ -101,7 +122,7 @@ main ()
 
     COMMAND=$1
 
-    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer$ ]]; then
+    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|tests|cs$ ]]; then
         echo "$COMMAND is not a supported command"
         exit 1
     fi

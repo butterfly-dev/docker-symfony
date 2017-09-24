@@ -10,19 +10,19 @@ help:
 
 build: ## Build containers for this project
 	$(info --> Build containers for this project)
-	@bin/app build
+	@bin/app.sh build
 
 run: ## Run containers for this project
 	$(info --> Run containers for this project)
-	@bin/app run
+	@bin/app.sh run
 
 stop: ## Stop containers for this project
 	$(info --> Stop containers for this project)
-	@bin/app stop
+	@bin/app.sh stop
 
 destroy: ## Remove containers for this project
 	$(info --> Remove containers for this project)
-	@bin/app destroy
+	@bin/app.sh destroy
 
 install: ## Build, run containers and install app
 	$(info --> Build, run containers and install app)
@@ -30,12 +30,12 @@ install: ## Build, run containers and install app
 
 bash: ## Run bash inside app container
 	$(info --> Run bash inside app container)
-	@bin/app bash
+	@bin/app.sh bash
 
 test: ## Run test inside app container
 	$(info --> Run test inside app container)
-	@bin/app tests
+	@bin/app.sh tests
 
 cs: ## Run coding style
 	$(info --> Run code style inside app container)
-	@bin/app cs
+	@bin/app.sh cs
