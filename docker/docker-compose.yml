@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 
 services:
   nginx:
@@ -14,7 +14,7 @@ services:
         - php
 
   php:
-    build: php
+    image: butterflydev/docker-symfony:latest
     env_file:
       - ../.env
     networks:
