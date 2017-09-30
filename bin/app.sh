@@ -73,6 +73,7 @@ tests ()
     ${DOCKER_COMPOSE} exec -T --user www-data php ./vendor/bin/simple-phpunit --coverage-text --colors=never
 }
 
+
 lint ()
 {
     echo "Lint..."
@@ -105,6 +106,7 @@ usage ()
     console             Execute bin/console symfony inside container app
     tests               Run test inside app container
     lint                Run code style inside app container
+
     "
 }
 
@@ -121,6 +123,7 @@ main ()
     fi
 
     COMMAND=$1
+
 
     if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|tests|lint$ ]]; then
         echo "$COMMAND is not a supported command"
