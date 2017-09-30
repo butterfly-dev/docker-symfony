@@ -36,6 +36,6 @@ test: ## Run test inside app container
 	$(info --> Run test inside app container)
 	@bin/app.sh tests
 
-cs: ## Run coding style
+lint: ## Run coding style
 	$(info --> Run code style inside app container)
-	@bin/app.sh cs
+	@bin/app.sh lint

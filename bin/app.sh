@@ -73,7 +73,7 @@ tests ()
     ${DOCKER_COMPOSE} exec -T --user www-data php ./vendor/bin/simple-phpunit --coverage-text --colors=never
 }
 
-cs ()
+lint ()
 {
     echo "Lint..."
     ${DOCKER_COMPOSE} exec -T --user www-data php find src -name '*.php' -exec php -l {} \; || EXIT_STATUS=$?
@@ -104,7 +104,7 @@ usage ()
     composer            Execute composer inside container app
     console             Execute bin/console symfony inside container app
     tests               Run test inside app container
-    cs                  Run code style inside app container
+    lint                Run code style inside app container
     "
 }
 
@@ -122,7 +122,7 @@ main ()
 
     COMMAND=$1
 
-    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|tests|cs$ ]]; then
+    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|tests|lint$ ]]; then
         echo "$COMMAND is not a supported command"
         exit 1
     fi

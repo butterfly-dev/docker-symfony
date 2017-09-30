@@ -1,51 +1,92 @@
 version: 2
 
 jobs:
-  test:
+  build:
     docker:
       - image: docker:17.05.0-ce-git
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          reusable: true
+          exclusive: true
       - run:
-          name: Install Docker Compose
+          name: Login DockerHub
           command: |
-            set -x
-            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
+            docker login --username ${DOCKER_HUB_LOGIN} --password ${DOCKER_HUB_PASSWORD}
+      - run:
+          name: Build image docker
+          command: |
+            cd docker/php
+            docker build --cache-from=butterflydev/docker-symfony:latest -t butterflydev/docker-symfony .
+      - run:
+          name: Push image docker
+          command: |
+            docker push butterflydev/docker-symfony
+
+  test:
+    docker:
+      - image: butterflydev/docker-symfony
+        environment:
+          SYMFONY_ENV: test
+    steps:
+      - checkout
+      - setup_remote_docker:
+          reusable: true
+          exclusive: true
+      - run:
+          name: Install dependencies
+          command: |
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            composer install -n
       - run:
           name: Run test
           command: |
-            make run
-            make test
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            vendor/bin/simple-phpunit --coverage-text --colors=never
+
+  lint:
+    docker:
+      - image: butterflydev/docker-symfony
+        environment:
+          SYMFONY_ENV: test
+    steps:
+      - checkout
+      - setup_remote_docker:
+          reusable: true
+          exclusive: true
       - run:
-          name: Run audit code
+          name: Install dependencies
           command: |
-            make cs
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            composer install -n
+      - run:
+          name: Run lint
+          command: |
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            find src -name '*.php' -exec php -l {} \; || EXIT_STATUS=$?
+            vendor/bin/phpcs --standard=phpcs.xml --extensions=php --ignore='var/,vendor/,app/AppKernel.php' src || EXIT_STATUS=$?
+            vendor/bin/phpmd src/ text phpmd.xml --exclude 'tests/,var/,vendor/' --suffixes php || EXIT_STATUS=$?
+            vendor/bin/phpcpd src/ || EXIT_STATUS=$?
+            exit $EXIT_STATUS
 
 workflows:
   version: 2
-  build_and_test:
+  build-test-and-deploy:
     jobs:
-#      - build
+      - build
       - test
+          requires:
+            - build
+      - lint:
+          requires:
+            - build
 
-
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            apk add --no-cache \
-#              py-pip=9.0.0-r1
-#            pip install \
-#              docker-compose==1.12.0
-#      - run:
-#          name: Build app for dev
-#          command: |
-#            cd docker/php
-#            docker build --rm=false -t butterflydev/base-app-dev:$CIRCLE_SHA1 .
-#            docker push butterflydev/base-app-dev:$CIRCLE_SHA1
-#      - run:
-#          name: Run test
-#          command: |
-#              docker run butterflydev/base-app-dev:$CIRCLE_SHA1
-#              docker stop butterflydev/base-app-dev:$CIRCLE_SHA1
+#      - deploy
