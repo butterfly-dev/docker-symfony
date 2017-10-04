@@ -113,9 +113,9 @@ usage ()
 main ()
 {
     CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml -p ${APP_NAME}"
+    DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml"
     source .env
-    declare DOCKER_COMPOSE="docker-compose -f $DOCKER_COMPOSE_FILE"
+    declare DOCKER_COMPOSE="docker-compose -f $DOCKER_COMPOSE_FILE -p ${APP_NAME}"
 
     if [ -z $1 ]; then
         usage
@@ -125,7 +125,7 @@ main ()
     COMMAND=$1
 
 
-    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|tests|lint$ ]]; then
+    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|console|tests|lint$ ]]; then
         echo "$COMMAND is not a supported command"
         exit 1
     fi
