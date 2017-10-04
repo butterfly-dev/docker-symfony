@@ -113,8 +113,8 @@ usage ()
 main ()
 {
     CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml"
-
+    DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml -p ${APP_NAME}"
+    source .env
     declare DOCKER_COMPOSE="docker-compose -f $DOCKER_COMPOSE_FILE"
 
     if [ -z $1 ]; then
