@@ -79,16 +79,32 @@ jobs:
 
   deploy:
     docker:
-      - image: debian:stretch-slim
+      - image: debian:stretch
     steps:
       - checkout
       - run:
-          name: Deploy App
+          name: Install lsb-release, gnupg, curl and python
           command: |
-            /bin/bash/ssh -i /Users/me/.ssh/id_rsa_github nicolas@35.202.2.69 --command "mkdir -p ~/symfiny/bin/"
-            /bin/bash/scp -i /Users/me/.ssh/id_rsa_github bin/deploy.sh nicolas@35.202.2.69
-            /bin/bash/ssh -i /Users/me/.ssh/id_rsa_github nicolas@35.202.2.69 --command "bin/"
-
+            apt update
+            apt install -y lsb-release gnupg curl python
+      - run:
+          name: Install GCloud
+          command: |
+            export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+            echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+            apt-get update && apt-get install -y kubectl google-cloud-sdk
+      - run:
+          name: Init Gcloud
+          command: |
+            gcloud auth activate-service-account --key-file=credential_key.json
+            gcloud config set project memoire-180218
+      - run:
+          name: Deploy
+          command: |
+            gcloud compute ssh nicolas@app --command "cd docker-symfony && make run"
+            gcloud compute ssh nicolas@app --command "cd docker-symfony && bin/app.sh composer install -n"
+            gcloud compute ssh nicolas@app --command "cd docker-symfony && bin/deploy/clean.sh"
 
 workflows:
   version: 2

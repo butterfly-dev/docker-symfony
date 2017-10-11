@@ -10,6 +10,17 @@ build ()
     ${DOCKER_COMPOSE} build --force-rm
 }
 
+init ()
+{
+    if [[ ! -e ${ENV_FILE} ]]; then
+        cp .env.dist .env
+    fi
+
+    if [[ ! -e docker/nginx/symfony.conf ]]; then
+        cp docker/nginx/symfony.conf.dist docker/nginx/symfony.conf
+    fi
+}
+
 run ()
 {
     ${DOCKER_COMPOSE} up -d --build --force-recreate
@@ -94,6 +105,7 @@ usage ()
 
     pull                Pull images for this project
     build               Build containers for this project
+    init                Init project
     run                 Run containers for this project
     stop                Stop containers for this project
     destroy             Remove containers for this project
@@ -116,13 +128,7 @@ main ()
     DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml"
     ENV_FILE=.env
 
-    if [[ ! -e ${ENV_FILE} ]]; then
-        cp .env.dist .env
-    fi
-
-    if [[ ! -e docker/nginx/symfony.conf ]]; then
-        cp docker/nginx/symfony.conf.dist docker/nginx/symfony.conf
-    fi
+    init
 
     source ${ENV_FILE}
 
@@ -136,7 +142,7 @@ main ()
     COMMAND=$1
 
 
-    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|console|tests|lint$ ]]; then
+    if [[ ! "$COMMAND" =~ ^pull|build|init|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|console|tests|lint$ ]]; then
         echo "$COMMAND is not a supported command"
         exit 1
     fi
