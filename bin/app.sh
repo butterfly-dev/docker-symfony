@@ -114,7 +114,18 @@ main ()
 {
     CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml"
-    source .env
+    ENV_FILE=.env
+
+    if [[ ! -e ${ENV_FILE} ]]; then
+        cp .env.dist .env
+    fi
+
+    if [[ ! -e docker/nginx/symfony.conf ]]; then
+        cp docker/nginx/symfony.conf.dist docker/nginx/symfony.conf
+    fi
+
+    source ${ENV_FILE}
+
     declare DOCKER_COMPOSE="docker-compose -f $DOCKER_COMPOSE_FILE -p ${APP_NAME}"
 
     if [ -z $1 ]; then
