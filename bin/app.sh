@@ -113,9 +113,20 @@ usage ()
 main ()
 {
     CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml -p ${APP_NAME}"
-    source .env
-    declare DOCKER_COMPOSE="docker-compose -f $DOCKER_COMPOSE_FILE"
+    DOCKER_COMPOSE_FILE="$CURRENT_DIR/../docker/docker-compose.yml"
+    ENV_FILE=.env
+
+    if [[ ! -e ${ENV_FILE} ]]; then
+        cp .env.dist .env
+    fi
+
+    if [[ ! -e docker/nginx/symfony.conf ]]; then
+        cp docker/nginx/symfony.conf.dist docker/nginx/symfony.conf
+    fi
+
+    source ${ENV_FILE}
+
+    declare DOCKER_COMPOSE="docker-compose -f $DOCKER_COMPOSE_FILE -p ${APP_NAME}"
 
     if [ -z $1 ]; then
         usage
@@ -125,7 +136,7 @@ main ()
     COMMAND=$1
 
 
-    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|tests|lint$ ]]; then
+    if [[ ! "$COMMAND" =~ ^pull|build|run|stop|destroy|ps|bash|badmin|exec|exec-root|composer|console|tests|lint$ ]]; then
         echo "$COMMAND is not a supported command"
         exit 1
     fi
