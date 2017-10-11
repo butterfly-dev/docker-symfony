@@ -11,3 +11,5 @@
 /vendor/
 /web/bundles/
 /web/uploads/
+### environment
+.env
