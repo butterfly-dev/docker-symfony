@@ -12,5 +12,4 @@
 /web/bundles/
 /web/uploads/
 ### environment
-.env
 docker/nginx/symfony.conf

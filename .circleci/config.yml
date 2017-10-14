@@ -1,106 +1,97 @@
 version: 2
 
 jobs:
-#  build:
-#    docker:
-#      - image: docker:17.05.0-ce-git
-#    steps:
-#      - checkout
-#      - setup_remote_docker:
-#          reusable: true
-#          exclusive: true
-#      - run:
-#          name: Login DockerHub
-#          command: |
-#            docker login --username ${DOCKER_HUB_LOGIN} --password ${DOCKER_HUB_PASSWORD}
-#      - run:
-#          name: Build image docker
-#          command: |
-#            cd docker/php
-#            docker build --cache-from=butterflydev/docker-symfony:latest -t butterflydev/docker-symfony .
-#      - run:
-#          name: Push image docker
-#          command: |
-#            docker push butterflydev/docker-symfony
-#
-#  test:
-#    docker:
-#      - image: butterflydev/docker-symfony
-#        environment:
-#          SYMFONY_ENV: test
-#    steps:
-#      - checkout
-#      - setup_remote_docker:
-#          reusable: true
-#          exclusive: true
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            set -o allexport
-#            source <(sed 's/\$/\\\$/g' .env)
-#            set +o allexport
-#            composer install -n
-#      - run:
-#          name: Run test
-#          command: |
-#            set -o allexport
-#            source <(sed 's/\$/\\\$/g' .env)
-#            set +o allexport
-#            vendor/bin/simple-phpunit --coverage-text --colors=never
-#
-#  lint:
-#    docker:
-#      - image: butterflydev/docker-symfony
-#        environment:
-#          SYMFONY_ENV: test
-#    steps:
-#      - checkout
-#      - setup_remote_docker:
-#          reusable: true
-#          exclusive: true
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            set -o allexport
-#            source <(sed 's/\$/\\\$/g' .env)
-#            set +o allexport
-#            composer install -n
-#      - run:
-#          name: Run lint
-#          command: |
-#            set -o allexport
-#            source <(sed 's/\$/\\\$/g' .env)
-#            set +o allexport
-#            find src -name '*.php' -exec php -l {} \; || EXIT_STATUS=$?
-#            vendor/bin/phpcs --standard=phpcs.xml --extensions=php --ignore='var/,vendor/,app/AppKernel.php' src || EXIT_STATUS=$?
-#            vendor/bin/phpmd src/ text phpmd.xml --exclude 'tests/,var/,vendor/' --suffixes php || EXIT_STATUS=$?
-#            vendor/bin/phpcpd src/ || EXIT_STATUS=$?
-#            exit $EXIT_STATUS
+  build:
 
-  deploy:
+  test:
     docker:
-      - image: debian:stretch-slim
+      - image: butterflydev/docker-symfony
+        environment:
+          SYMFONY_ENV: test
     steps:
       - checkout
+      - setup_remote_docker:
+          reusable: true
+          exclusive: true
       - run:
-          name: Deploy App
+          name: Install dependencies
           command: |
-            /bin/bash/ssh -i /Users/me/.ssh/id_rsa_github nicolas@35.202.2.69 --command "mkdir -p ~/symfiny/bin/"
-            /bin/bash/scp -i /Users/me/.ssh/id_rsa_github bin/deploy.sh nicolas@35.202.2.69
-            /bin/bash/ssh -i /Users/me/.ssh/id_rsa_github nicolas@35.202.2.69 --command "bin/"
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            composer install -n
+      - run:
+          name: Run test
+          command: |
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            vendor/bin/simple-phpunit --coverage-text --colors=never
+
+  lint:
+    docker:
+      - image: butterflydev/docker-symfony
+        environment:
+          SYMFONY_ENV: test
+    steps:
+      - checkout
+      - setup_remote_docker:
+          reusable: true
+          exclusive: true
+      - run:
+          name: Install dependencies
+          command: |
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            composer install -n
+      - run:
+          name: Run lint
+          command: |
+            set -o allexport
+            source <(sed 's/\$/\\\$/g' .env)
+            set +o allexport
+            find src -name '*.php' -exec php -l {} \; || EXIT_STATUS=$?
+            vendor/bin/phpcs --standard=phpcs.xml --extensions=php --ignore='var/,vendor/,app/AppKernel.php' src || EXIT_STATUS=$?
+            vendor/bin/phpmd src/ text phpmd.xml --exclude 'tests/,var/,vendor/' --suffixes php || EXIT_STATUS=$?
+            vendor/bin/phpcpd src/ || EXIT_STATUS=$?
+            exit $EXIT_STATUS
+
+#  deploy:
+#    machine:
+#      environment:
+#        PROJECT_NAME: circle-ctl-test
+#        CLUSTER_NAME: docker-hello-google-cluster
+#        CLOUDSDK_COMPUTE_ZONE: us-central1-f
+#        DEBIAN_FRONTEND: noninteractive
+#      services:
+#        - docker
+#    dependencies:
+#      pre:
+#        - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update
+#        - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update kubectl
+#        - echo $ACCT_AUTH | base64 --decode -i > ${HOME}/account-auth.json
+#        - sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/account-auth.json
+#        - sudo /opt/google-cloud-sdk/bin/gcloud config set project $PROJECT_NAME
+#        - sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set container/cluster $CLUSTER_NAME
+#        # Reading the zone from the env var is not working so we set it here
+#        - sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
+#        - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME
+#        - docker build -t us.gcr.io/${PROJECT_NAME}/hello:$CIRCLE_SHA1 .
+#        # Using a separate tag command until Docker 1.10 is available on CircleCI, then we can use two tags in the build command above
+#        - docker tag us.gcr.io/${PROJECT_NAME}/hello:$CIRCLE_SHA1 us.gcr.io/${PROJECT_NAME}/hello:latest
+#    test:
+#      post:
+#        - docker run -d -p 3000:3000 -e "SECRET_KEY_BASE=abcd1234" us.gcr.io/${PROJECT_NAME}/hello:$CIRCLE_SHA1; sleep 10
+#        - curl --retry 10 --retry-delay 5 -v http://localhost:3000
 
 
 workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-#      - build
-#      - test:
-#          requires:
-#            - build
-#      - lint:
-#          requires:
-#            - build
-      - deploy
+      - test
+      - lint
+#      - deploy
 #          requires:
 #            - test
