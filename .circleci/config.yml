@@ -2,26 +2,6 @@ version: 2
 
 jobs:
   build:
-#    docker:
-#      - image: docker:17.05.0-ce-git
-#    steps:
-#      - checkout
-#      - setup_remote_docker:
-#          reusable: true
-#          exclusive: true
-#      - run:
-#          name: Login DockerHub
-#          command: |
-#            docker login --username ${DOCKER_HUB_LOGIN} --password ${DOCKER_HUB_PASSWORD}
-#      - run:
-#          name: Build image docker
-#          command: |
-#            cd docker/php
-#            docker build --cache-from=butterflydev/docker-symfony:latest -t butterflydev/docker-symfony .
-#      - run:
-#          name: Push image docker
-#          command: |
-#            docker push butterflydev/docker-symfony
 
   test:
     docker:
@@ -100,23 +80,18 @@ jobs:
 #        - docker build -t us.gcr.io/${PROJECT_NAME}/hello:$CIRCLE_SHA1 .
 #        # Using a separate tag command until Docker 1.10 is available on CircleCI, then we can use two tags in the build command above
 #        - docker tag us.gcr.io/${PROJECT_NAME}/hello:$CIRCLE_SHA1 us.gcr.io/${PROJECT_NAME}/hello:latest
-    test:
-      post:
-        - docker run -d -p 3000:3000 -e "SECRET_KEY_BASE=abcd1234" us.gcr.io/${PROJECT_NAME}/hello:$CIRCLE_SHA1; sleep 10
-        - curl --retry 10 --retry-delay 5 -v http://localhost:3000
+#    test:
+#      post:
+#        - docker run -d -p 3000:3000 -e "SECRET_KEY_BASE=abcd1234" us.gcr.io/${PROJECT_NAME}/hello:$CIRCLE_SHA1; sleep 10
+#        - curl --retry 10 --retry-delay 5 -v http://localhost:3000
 
 
 workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-#      - build
       - test
-#          requires:
-#            - build
       - lint
-#          requires:
-#            - build
 #      - deploy
 #          requires:
 #            - test
